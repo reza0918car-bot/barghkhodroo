@@ -1,3 +1,5 @@
+
+
 name: Build APK
 
 on:
@@ -10,6 +12,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Upgrade AGP to fix Lint bug
+        run: |
+          echo "Upgrading AGP to 9.3.2..."
+          if [ -f android/settings.gradle.kts ]; then
+            sed -i 's/id("com.android.application") version "[^"]*"/id("com.android.application") version "9.3.2"/g' android/settings.gradle.kts
+          else
+            sed -i 's/id "com.android.application" version "[^"]*"/id "com.android.application" version "9.3.2"/g' android/settings.gradle
+          fi
+          echo "AGP version updated."
       - name: Checkout Code
         uses: actions/checkout@v5
 
