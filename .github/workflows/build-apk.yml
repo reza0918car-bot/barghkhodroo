@@ -36,6 +36,8 @@ jobs:
           # ۱. ساخت مجدد پوشه اندروید
           rm -rf android
           flutter create --platforms=android .
+          # Regenerate plugin metadata/registrant for the resolved dependency graph
+          flutter pub get
           
           # ۲. تغییر نام برنامه و اضافه کردن مجوزها
           sed -i 's/android:label="[^"]*"/android:label="برق خودرو مهندس"/g' android/app/src/main/AndroidManifest.xml
