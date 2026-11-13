@@ -30,26 +30,41 @@ jobs:
           echo "1. Creating Android directory..."
           flutter create . --platforms=android
           
-          echo "2. Applying AGP 9 compatibility flags..."
-          # این پرچم‌ها از پلاگین‌های قدیمی مانند android_file_picker پشتیبانی می‌کنند
+          echo "2. Fixing Namespace issue for ALL plugins (sms_sender_background, etc.)..."
+          # این اسکریپت به Gradle می‌گوید اگر namespace نبود، خودش آن را تنظیم کند
+          cat <<EOF >> android/build.gradle
+          subprojects {
+              afterEvaluate { project ->
+                  if (project.hasProperty('android')) {
+                      project.android {
+                          if (namespace == null) {
+                              namespace project.group
+                          }
+                      }
+                  }
+              }
+          }
+          EOF
+
+          echo "3. Applying AGP 9 compatibility flags for android_file_picker..."
           cat <<EOF >> android/gradle.properties
           android.newDsl=false
           android.builtInKotlin=false
           EOF
 
-          echo "3. Disabling Lint..."
+          echo "4. Disabling Lint..."
           if [ -f android/app/build.gradle.kts ]; then
             sed -i '/android {/a \    lint {\n        checkReleaseBuilds = false\n        abortOnError = false\n    }' android/app/build.gradle.kts
           else
             sed -i '/android {/a \    lintOptions {\n        checkReleaseBuilds false\n        abortOnError false\n    }' android/app/build.gradle
           fi
 
-          echo "4. Setting App Name and Permissions..."
+          echo "5. Setting App Name and Permissions..."
           sed -i 's/android:label="[^"]*"/android:label="برق خودرو مهندس"/g' android/app/src/main/AndroidManifest.xml
           sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET"\/>' android/app/src/main/AndroidManifest.xml
           sed -i '/<manifest/a \    <uses-permission android:name="android.permission.SEND_SMS"\/>' android/app/src/main/AndroidManifest.xml
 
-          echo "5. Setting minSdkVersion to 23..."
+          echo "6. Setting minSdkVersion to 23..."
           if [ -f android/app/build.gradle.kts ]; then
             sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 23/g' android/app/build.gradle.kts
           else
