@@ -1,0 +1,57 @@
+name: Generate and Save Android Folder
+
+on:
+  workflow_dispatch: # این گزینه اجازه می‌دهد دستی آن را اجرا کنید
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # این مجوز برای ذخیره تغییرات در مخزن لازم است
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Create Android Folder and Apply Fixes
+        run: |
+          flutter create . --platforms=android
+          
+          # رفع مشکل namespace پلاگین‌ها
+          cat <<EOF >> android/build.gradle
+          subprojects {
+              afterEvaluate { project ->
+                  if (project.hasProperty('android')) {
+                      project.android {
+                          if (namespace == null) {
+                              namespace project.group
+                          }
+                      }
+                  }
+              }
+          }
+          EOF
+
+          # اعمال تنظیمات نام و مجوزها
+          sed -i 's/android:label="[^"]*"/android:label="برق خودرو مهندس"/g' android/app/src/main/AndroidManifest.xml
+          sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET"\/>' android/app/src/main/AndroidManifest.xml
+          sed -i '/<manifest/a \    <uses-permission android:name="android.permission.SEND_SMS"\/>' android/app/src/main/AndroidManifest.xml
+
+      - name: Commit and Push Android Folder
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add android/
+          git commit -m "Add and configure android folder permanently"
+          git push
