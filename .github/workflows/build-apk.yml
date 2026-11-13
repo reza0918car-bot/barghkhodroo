@@ -45,15 +45,26 @@ jobs:
           }
           EOF
 
-          echo "3. Patching android_file_picker's build.gradle.kts..."
-          # این مرحله فایل پلاگین مشکل‌دار را پیدا کرده و شرط معیوب آن را اصلاح می‌کند
-          PLUGIN_GRADLE=$(find ~/.pub-cache -path "*/android_file_picker-2.1.6/android/build.gradle.kts" | head -n 1)
-          if [ -n "$PLUGIN_GRADLE" ]; then
-            echo "Patching $PLUGIN_GRADLE"
-            # اصلاح شرط معیوب که باعث نادیده گرفتن پلاگین کاتلین در AGP 9 می‌شود
-            sed -i 's/if (!isAgp9OrAbove)/if (isAgp9OrAbove)/' "$PLUGIN_GRADLE"
+          echo "3. Patching android_file_picker's build.gradle.kts (Inverted Condition Fix)..."
+          # پیدا کردن فایل build.gradle.kts پلاگین مشکل‌دار
+          PLUGIN_GRADLE_KTS=$(find ~/.pub-cache -path "*/android_file_picker-*/android/build.gradle.kts" | head -n 1)
+          
+          if [ -n "$PLUGIN_GRADLE_KTS" ]; then
+            echo "Found plugin gradle file at: $PLUGIN_GRADLE_KTS"
+            # ۱. نمایش خطوطی که شرط در آن‌ها وجود دارد (برای دیباگ)
+            grep -n "isAgp9OrAbove" "$PLUGIN_GRADLE_KTS" || echo "No isAgp9OrAbove found."
+            
+            # ۲. اصلاح شرط برعکس در فایل Kotlin DSL
+            # الگوی قبلی: if (!isAgp9OrAbove) { ... }
+            # الگوی جدید: if (isAgp9OrAbove) { ... }
+            sed -i 's/if (!isAgp9OrAbove)/if (isAgp9OrAbove)/g' "$PLUGIN_GRADLE_KTS"
+            
+            echo "Patch applied. Verifying..."
+            grep -n "isAgp9OrAbove" "$PLUGIN_GRADLE_KTS"
           else
-            echo "Plugin gradle file not found, skipping patch."
+            echo "ERROR: build.gradle.kts for android_file_picker not found!"
+            # اگر فایل پیدا نشد، بیلد را متوقف کن تا مشکل پنهان نماند
+            exit 1 
           fi
 
           echo "4. Disabling Lint..."
