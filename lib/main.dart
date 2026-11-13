@@ -16,6 +16,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 //import 'package:url_launcher/url_launcher.dart';
 
 void main() {
@@ -791,6 +792,37 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
+  void _handleDashboardAction(String action) {
+    switch (action) {
+      case 'customers':
+      case 'newCustomer':
+        setState(() => _currentIndex = 1);
+        break;
+      case 'debtors':
+        setState(() => _currentIndex = 2);
+        break;
+      case 'reports':
+        setState(() => _currentIndex = 3);
+        break;
+      case 'expenses':
+        setState(() => _currentIndex = 4);
+        break;
+      case 'sms':
+        Navigator.push(context, MaterialPageRoute(
+          builder: (_) => BulkSmsScreen(customers: customers),
+        ));
+        break;
+      case 'templates':
+        Navigator.push(context, MaterialPageRoute(
+          builder: (_) => const TemplatesManagerScreen(),
+        ));
+        break;
+      case 'toggleTheme':
+        widget.onToggleTheme();
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -809,6 +841,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     }
 
     final screens = [
+      WorkshopHtmlDashboard(
+        customers: customers,
+        isDark: widget.isDark,
+        onAction: _handleDashboardAction,
+      ),
       HomeScreen(
         customers: customers,
         onDataChanged: _saveData,
@@ -836,12 +873,115 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
           type: BottomNavigationBarType.fixed,
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.engineering), label: 'میز کار مشتریان'),
+            BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), label: 'داشبورد'),
+            BottomNavigationBarItem(icon: Icon(Icons.engineering), label: 'مشتریان'),
             BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet), label: 'حساب دفتری'),
-            BottomNavigationBarItem(icon: Icon(Icons.query_stats), label: 'دخل و گزارش'),
+            BottomNavigationBarItem(icon: Icon(Icons.query_stats), label: 'گزارش‌ها'),
             BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'هزینه‌ها'),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ======================== داشبورد HTML متصل به Flutter ========================
+class WorkshopHtmlDashboard extends StatefulWidget {
+  final List<Customer> customers;
+  final bool isDark;
+  final ValueChanged<String> onAction;
+
+  const WorkshopHtmlDashboard({
+    super.key,
+    required this.customers,
+    required this.isDark,
+    required this.onAction,
+  });
+
+  @override
+  State<WorkshopHtmlDashboard> createState() => _WorkshopHtmlDashboardState();
+}
+
+class _WorkshopHtmlDashboardState extends State<WorkshopHtmlDashboard> {
+  late final WebViewController _controller;
+  bool _pageReady = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..addJavaScriptChannel(
+        'WorkshopBridge',
+        onMessageReceived: (JavaScriptMessage message) {
+          final action = message.message;
+          const allowed = {
+            'customers', 'newCustomer', 'debtors', 'reports', 'expenses',
+            'sms', 'templates', 'toggleTheme',
+          };
+          if (allowed.contains(action)) widget.onAction(action);
+        },
+      )
+      ..setNavigationDelegate(NavigationDelegate(
+        onPageFinished: (_) {
+          _pageReady = true;
+          _sendDashboardData();
+        },
+      ))
+      ..loadFlutterAsset('assets/web/dashboard.html');
+  }
+
+  @override
+  void didUpdateWidget(covariant WorkshopHtmlDashboard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Customers are updated in-place by the existing screens; always refresh
+    // the read-only dashboard when the parent rebuilds.
+    _sendDashboardData();
+  }
+
+  void _sendDashboardData() {
+    if (!_pageReady) return;
+    final today = JalaliHelper.nowShamsi();
+    final totalCars = widget.customers.fold<int>(0, (sum, c) => sum + c.cars.length);
+    final totalDebt = widget.customers.fold<int>(0, (sum, c) => sum + c.totalDebt);
+    var receivedToday = 0;
+    for (final customer in widget.customers) {
+      for (final car in customer.cars) {
+        for (final service in car.services) {
+          final recordedPayments = service.paymentEntries.fold<int>(
+            0, (sum, payment) => sum + payment.amount,
+          );
+          final initialPayment = (service.paidAmount - recordedPayments).clamp(0, service.paidAmount).toInt();
+          if (service.date == today) receivedToday += initialPayment;
+          receivedToday += service.paymentEntries
+              .where((payment) => payment.date == today)
+              .fold<int>(0, (sum, payment) => sum + payment.amount);
+        }
+      }
+    }
+    final recent = widget.customers.reversed.take(4).map((customer) => {
+      'name': customer.name,
+      'car': customer.cars.isNotEmpty ? customer.cars.first.model : 'بدون خودرو',
+      'debt': customer.totalDebt,
+    }).toList();
+    final payload = jsonEncode({
+      'customerCount': widget.customers.length,
+      'carCount': totalCars,
+      'receivedToday': receivedToday,
+      'totalDebt': totalDebt,
+      'recent': recent,
+      'today': today,
+      'dark': widget.isDark,
+    });
+    _controller.runJavaScript('window.updateDashboard && window.updateDashboard($payload);');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: WebViewWidget(controller: _controller),
       ),
     );
   }
