@@ -19,10 +19,8 @@ dependencies:
   pdf: ^3.11.3
   printing: ^5.14.2
   sms_sender_background: ^1.0.7
-  # Keep file_picker compatible with share_plus 13.x (win32 6.x).
   file_picker: 13.3.3
   cross_file: ^0.3.5+5
-
 
 dev_dependencies:
   flutter_test:
@@ -31,7 +29,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.13.1
 
 flutter_launcher_icons:
-  android: true                     # 👈 این خط را از "launcher_icon" به true تغییر دهید
+  android: true
   ios: false
   image_path: "app_icon.png"       
   min_sdk_android: 21
