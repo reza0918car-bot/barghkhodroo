@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220"><title>داشبورد | برق خودرو مهندس</title>
+<style>
+@font-face{font-family:Vazir;src:url('../fonts/Vazirmatn-Regular.ttf')}@font-face{font-family:Vazir;src:url('../fonts/Vazirmatn-Bold.ttf');font-weight:700}
+:root{--bg:#0b1220;--panel:#111c2e;--panel2:#17243a;--line:#263750;--text:#f4f7fb;--muted:#9eacc0;--blue:#38bdf8;--gold:#f5b942;--green:#34d399;--red:#fb7185}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 90% -10%,#123451 0,transparent 38%),var(--bg);color:var(--text);font-family:Vazir,Tahoma,sans-serif;min-height:100vh}.wrap{max-width:760px;margin:auto;padding:18px 16px 28px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 22px}.brand{display:flex;align-items:center;gap:11px}.logo{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(145deg,#38bdf8,#0876ad);font-size:25px;box-shadow:0 8px 24px #0284c744}.brand h1{font-size:16px;margin:0 0 3px}.brand p{font-size:11px;color:var(--muted);margin:0}.iconbtn{border:1px solid var(--line);background:var(--panel);color:var(--text);width:42px;height:42px;border-radius:13px;font-size:18px}.welcome{display:flex;justify-content:space-between;align-items:end;margin:8px 2px 15px}.welcome h2{font-size:21px;margin:0 0 4px}.welcome p{color:var(--muted);font-size:12px;margin:0}.date{font-size:11px;color:var(--muted);background:#17243a;padding:8px 11px;border-radius:10px}.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.stat{background:linear-gradient(145deg,#17263c,#111c2e);border:1px solid var(--line);border-radius:17px;padding:15px;min-height:112px;position:relative;overflow:hidden}.stat:after{content:"";position:absolute;width:80px;height:80px;border-radius:50%;background:var(--glow);opacity:.08;left:-22px;bottom:-35px}.stathead{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}.ico{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--glow);color:white;font-size:17px}.value{font-size:23px;font-weight:700;margin-top:10px;direction:ltr;text-align:right}.unit{font-size:11px;color:var(--muted);font-weight:400;margin-right:4px}.section{display:flex;justify-content:space-between;align-items:center;margin:24px 2px 12px}.section h3{font-size:15px;margin:0}.section span{font-size:11px;color:var(--blue)}.actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.action{border:1px solid var(--line);background:var(--panel);border-radius:15px;padding:14px 5px 12px;text-align:center;color:var(--text);font:inherit;cursor:pointer}.action b{display:grid;place-items:center;width:39px;height:39px;border-radius:13px;margin:0 auto 8px;background:#12324a;color:var(--blue);font-size:20px}.action small{font-size:10px;white-space:nowrap}.recent{border:1px solid var(--line);border-radius:17px;background:var(--panel);overflow:hidden}.row{display:flex;align-items:center;gap:11px;padding:13px;border-bottom:1px solid var(--line)}.row:last-child{border:0}.avatar{width:39px;height:39px;border-radius:13px;background:#20334c;display:grid;place-items:center;color:var(--blue);font-weight:bold}.info{flex:1;min-width:0}.info strong{display:block;font-size:12px}.info small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.tag{font-size:10px;padding:5px 8px;border-radius:9px;background:#12382f;color:var(--green)}.tag.debt{background:#40232d;color:var(--red)}.notice{margin-top:18px;border:1px dashed #52647d;color:var(--muted);border-radius:13px;padding:11px 13px;font-size:10px;line-height:1.9}@media(min-width:600px){.stats{grid-template-columns:repeat(4,1fr)}.stat{min-height:125px}.actions{grid-template-columns:repeat(4,1fr)}}
+body.light{--bg:#f3f6fb;--panel:#ffffff;--panel2:#eaf0f7;--line:#d7e0eb;--text:#172033;--muted:#65748b;background:radial-gradient(ellipse at 90% -10%,#d6edf9 0,transparent 38%),var(--bg)}body.light .stat{background:linear-gradient(145deg,#fff,#f4f8fc)}body.light .action{background:#fff}body.light .notice{border-color:#b7c5d5}body.light .date{background:#e8eff7}body.light .action b{background:#e2f3fc}body.light .tag{background:#e0f7ee;color:#087c55}body.light .tag.debt{background:#fde8ed;color:#be3650}body.light .logo{color:#fff}
+</style></head>
+<body><main class="wrap">
+<header class="top"><div class="brand"><div class="logo">ϟ</div><div><h1>برق خودرو مهندس</h1><p>مدیریت هوشمند تعمیرگاه</p></div></div><button class="iconbtn" aria-label="تغییر پوسته" onclick="sendAction('toggleTheme')">◐</button></header>
+<div class="welcome"><div><h2>داشبورد مدیریت</h2><p>خلاصه وضعیت تعمیرگاه شما</p></div><div class="date" id="today">امروز</div></div>
+<section class="stats">
+<div class="stat" style="--glow:#0ea5e9"><div class="stathead"><span>کل مشتریان</span><i class="ico">♙</i></div><div class="value" id="customerCount">— <span class="unit">نفر</span></div></div>
+<div class="stat" style="--glow:#8b5cf6"><div class="stathead"><span>خودروهای ثبت‌شده</span><i class="ico">🚘</i></div><div class="value" id="carCount">— <span class="unit">دستگاه</span></div></div>
+<div class="stat" style="--glow:#10b981"><div class="stathead"><span>دریافتی امروز</span><i class="ico">↙</i></div><div class="value" id="receivedToday">— <span class="unit">تومان</span></div></div>
+<div class="stat" style="--glow:#f59e0b"><div class="stathead"><span>مانده حساب</span><i class="ico">▤</i></div><div class="value" id="totalDebt">— <span class="unit">تومان</span></div></div>
+</section>
+<div class="section"><h3>دسترسی سریع</h3><span>عملیات پرکاربرد</span></div>
+<section class="actions"><button class="action" onclick="sendAction('newCustomer')"><b>＋</b><small>مشتری جدید</small></button><button class="action" onclick="sendAction('customers')"><b>🚗</b><small>ثبت خودرو</small></button><button class="action" onclick="sendAction('customers')"><b>▧</b><small>پرونده‌ها</small></button><button class="action" onclick="sendAction('sms')"><b>✉</b><small>ارسال پیامک</small></button></section>
+<div class="section"><h3>پرونده‌های اخیر</h3><span onclick="sendAction('customers')" style="cursor:pointer">مشاهده همه ←</span></div>
+<section class="recent" id="recentList"><div class="row"><div class="info"><strong>در حال بارگذاری اطلاعات...</strong></div></div></section>
+<div class="notice">اطلاعات این داشبورد مستقیماً از پرونده‌های ذخیره‌شده در برنامه خوانده می‌شود. ثبت و ویرایش اطلاعات همچنان توسط بخش‌های اصلی Flutter انجام می‌شود.</div>
+</main>
+<script>
+function sendAction(action){if(window.WorkshopBridge&&window.WorkshopBridge.postMessage){window.WorkshopBridge.postMessage(action)}}
+const faNumber=new Intl.NumberFormat('fa-IR');
+function setValue(id,value,unit){const el=document.getElementById(id);if(el)el.innerHTML=faNumber.format(Number(value)||0)+' <span class="unit">'+unit+'</span>'}
+window.updateDashboard=function(data){
+  document.getElementById('today').textContent=data.today||'امروز';
+  document.body.classList.toggle('light',data.dark===false);
+  setValue('customerCount',data.customerCount,'نفر');
+  setValue('carCount',data.carCount,'دستگاه');
+  setValue('receivedToday',data.receivedToday,'تومان');
+  setValue('totalDebt',data.totalDebt,'تومان');
+  const list=document.getElementById('recentList');
+  list.replaceChildren();
+  if(!data.recent||!data.recent.length){const empty=document.createElement('div');empty.className='row';empty.textContent='هنوز پرونده‌ای ثبت نشده است.';list.appendChild(empty);return;}
+  data.recent.forEach(item=>{
+    const row=document.createElement('div');row.className='row';
+    const avatar=document.createElement('div');avatar.className='avatar';avatar.textContent=(item.name||'؟').trim().charAt(0)||'؟';
+    const info=document.createElement('div');info.className='info';
+    const name=document.createElement('strong');name.textContent=item.name||'بدون نام';
+    const detail=document.createElement('small');detail.textContent=item.car||'بدون خودرو';
+    info.append(name,detail);
+    const tag=document.createElement('span');tag.className='tag'+(Number(item.debt)>0?' debt':'');tag.textContent=Number(item.debt)>0?'بدهکار':'ثبت‌شده';
+    row.append(avatar,info,tag);list.appendChild(row);
+  });
+};
+</script>
+</body></html>
