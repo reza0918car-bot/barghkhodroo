@@ -30,6 +30,9 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^4.0.0
   flutter_launcher_icons: ^0.13.1
+  flutter pub get
+  flutter analyze
+  flutter build apk --release
 
 flutter_launcher_icons:
   android: true                     # 👈 این خط را از "launcher_icon" به true تغییر دهید
