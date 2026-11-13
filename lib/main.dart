@@ -1567,9 +1567,9 @@ class _HomeScreenState extends State<HomeScreen> {
         allowedExtensions: ['json'],
       );
 
-      if (result == null || result.files.isEmpty) return;
+      if (result == null || result.isEmpty) return;
 
-      final PlatformFile file = result.files.first;
+      final PlatformFile file = result.first;
       final String filePath = file.path!;
 
       final fileContent = await File(filePath).readAsString(encoding: utf8);
