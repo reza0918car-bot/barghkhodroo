@@ -30,18 +30,13 @@ jobs:
           echo "1. Creating Android directory..."
           flutter create . --platforms=android
           
-          echo "2. Downgrading AGP to 8.7.3 to fix android_file_picker compatibility..."
-          if [ -f android/settings.gradle.kts ]; then
-            sed -i 's/id("com.android.application") version "[^"]*"/id("com.android.application") version "8.7.3"/g' android/settings.gradle.kts
-            sed -i 's/id("org.jetbrains.kotlin.android") version "[^"]*"/id("org.jetbrains.kotlin.android") version "1.9.22"/g' android/settings.gradle.kts
-          else
-            sed -i 's/id "com.android.application" version "[^"]*"/id "com.android.application" version "8.7.3"/g' android/settings.gradle
-            sed -i 's/id "org.jetbrains.kotlin.android" version "[^"]*"/id "org.jetbrains.kotlin.android" version "1.9.22"/g' android/settings.gradle
-          fi
-
-          echo "3. Fixing Namespace issue for plugins..."
+          echo "2. Patching android_file_picker bug..."
+          # این کد پلاگین فلاتر را به پکیج مشکل‌دار تزریق می‌کند
           cat <<EOF >> android/build.gradle
           subprojects {
+              if (project.name == "android_file_picker") {
+                  project.apply plugin: 'dev.flutter.flutter-gradle-plugin'
+              }
               afterEvaluate { project ->
                   if (project.hasProperty('android')) {
                       project.android {
@@ -54,19 +49,19 @@ jobs:
           }
           EOF
 
-          echo "4. Disabling Lint to bypass webview_flutter_android bug..."
+          echo "3. Disabling Lint..."
           if [ -f android/app/build.gradle.kts ]; then
             sed -i '/android {/a \    lint {\n        checkReleaseBuilds = false\n        abortOnError = false\n    }' android/app/build.gradle.kts
           else
             sed -i '/android {/a \    lintOptions {\n        checkReleaseBuilds false\n        abortOnError false\n    }' android/app/build.gradle
           fi
 
-          echo "5. Setting App Name and Permissions..."
+          echo "4. Setting App Name and Permissions..."
           sed -i 's/android:label="[^"]*"/android:label="برق خودرو مهندس"/g' android/app/src/main/AndroidManifest.xml
           sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET"\/>' android/app/src/main/AndroidManifest.xml
           sed -i '/<manifest/a \    <uses-permission android:name="android.permission.SEND_SMS"\/>' android/app/src/main/AndroidManifest.xml
 
-          echo "6. Setting minSdkVersion to 23..."
+          echo "5. Setting minSdkVersion to 23..."
           if [ -f android/app/build.gradle.kts ]; then
             sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 23/g' android/app/build.gradle.kts
           else
