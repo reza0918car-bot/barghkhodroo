@@ -30,8 +30,7 @@ jobs:
           echo "1. Creating Android directory..."
           flutter create . --platforms=android
           
-          echo "2. Fixing Namespace issue for ALL plugins (sms_sender_background, etc.)..."
-          # این اسکریپت به Gradle می‌گوید اگر namespace نبود، خودش آن را تنظیم کند
+          echo "2. Fixing Namespace issue for ALL plugins..."
           cat <<EOF >> android/build.gradle
           subprojects {
               afterEvaluate { project ->
@@ -46,11 +45,16 @@ jobs:
           }
           EOF
 
-          echo "3. Applying AGP 9 compatibility flags for android_file_picker..."
-          cat <<EOF >> android/gradle.properties
-          android.newDsl=false
-          android.builtInKotlin=false
-          EOF
+          echo "3. Patching android_file_picker's build.gradle.kts..."
+          # این مرحله فایل پلاگین مشکل‌دار را پیدا کرده و شرط معیوب آن را اصلاح می‌کند
+          PLUGIN_GRADLE=$(find ~/.pub-cache -path "*/android_file_picker-2.1.6/android/build.gradle.kts" | head -n 1)
+          if [ -n "$PLUGIN_GRADLE" ]; then
+            echo "Patching $PLUGIN_GRADLE"
+            # اصلاح شرط معیوب که باعث نادیده گرفتن پلاگین کاتلین در AGP 9 می‌شود
+            sed -i 's/if (!isAgp9OrAbove)/if (isAgp9OrAbove)/' "$PLUGIN_GRADLE"
+          else
+            echo "Plugin gradle file not found, skipping patch."
+          fi
 
           echo "4. Disabling Lint..."
           if [ -f android/app/build.gradle.kts ]; then
