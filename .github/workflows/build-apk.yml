@@ -45,31 +45,37 @@ jobs:
           }
           EOF
 
-          echo "3. Patching android_file_picker (Removing 'flutter' block completely)..."
+          echo "3. Setting android.builtInKotlin=false for AGP 9 compatibility..."
+          cat <<EOF >> android/gradle.properties
+          android.builtInKotlin=false
+          EOF
+
+          echo "4. Removing 'flutter' block from android_file_picker's build.gradle.kts..."
+          # پیدا کردن فایل build.gradle.kts پلاگین مشکل‌دار
           PLUGIN_KTS=$(find ~/.pub-cache -path "*/android_file_picker-*/android/build.gradle.kts" | head -n 1)
           if [ -n "$PLUGIN_KTS" ]; then
             echo "Found plugin at: $PLUGIN_KTS"
-            # حذف کامل بلوک flutter { ... } از فایل Kotlin DSL
-            sed -i '/flutter {/,/}/d' "$PLUGIN_KTS"
+            # حذف کامل بلوک flutter { ... } با استفاده از perl برای تطبیق دقیق آکولادها
+            perl -0pi -e 's/flutter\s*\{.*?\}//gs' "$PLUGIN_KTS"
             echo "Removed 'flutter' block from build.gradle.kts"
           else
             echo "ERROR: build.gradle.kts for android_file_picker not found!"
             exit 1
           fi
 
-          echo "4. Disabling Lint..."
+          echo "5. Disabling Lint..."
           if [ -f android/app/build.gradle.kts ]; then
             sed -i '/android {/a \    lint {\n        checkReleaseBuilds = false\n        abortOnError = false\n    }' android/app/build.gradle.kts
           else
             sed -i '/android {/a \    lintOptions {\n        checkReleaseBuilds false\n        abortOnError false\n    }' android/app/build.gradle
           fi
 
-          echo "5. Setting App Name and Permissions..."
+          echo "6. Setting App Name and Permissions..."
           sed -i 's/android:label="[^"]*"/android:label="برق خودرو مهندس"/g' android/app/src/main/AndroidManifest.xml
           sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET"\/>' android/app/src/main/AndroidManifest.xml
           sed -i '/<manifest/a \    <uses-permission android:name="android.permission.SEND_SMS"\/>' android/app/src/main/AndroidManifest.xml
 
-          echo "6. Setting minSdkVersion to 23..."
+          echo "7. Setting minSdkVersion to 23..."
           if [ -f android/app/build.gradle.kts ]; then
             sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 23/g' android/app/build.gradle.kts
           else
