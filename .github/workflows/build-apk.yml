@@ -45,24 +45,15 @@ jobs:
           }
           EOF
 
-          echo "3. Patching android_file_picker (Removing 'flutter' block)..."
-          PLUGIN_DIR=$(find ~/.pub-cache -type d -name "android_file_picker-*" | head -n 1)
-          if [ -n "$PLUGIN_DIR" ]; then
-            echo "Found plugin at: $PLUGIN_DIR"
-            
-            # خاموش کردن بلوک flutter در فایل Kotlin DSL
-            if [ -f "$PLUGIN_DIR/android/build.gradle.kts" ]; then
-              echo "Patching build.gradle.kts..."
-              sed -i '/flutter {/,/}/ s/^/\/\//' "$PLUGIN_DIR/android/build.gradle.kts"
-            fi
-            
-            # خاموش کردن بلوک flutter در فایل Groovy (برای اطمینان)
-            if [ -f "$PLUGIN_DIR/android/build.gradle" ]; then
-              echo "Patching build.gradle..."
-              sed -i '/flutter {/,/}/ s/^/\/\//' "$PLUGIN_DIR/android/build.gradle"
-            fi
+          echo "3. Patching android_file_picker (Removing 'flutter' block completely)..."
+          PLUGIN_KTS=$(find ~/.pub-cache -path "*/android_file_picker-*/android/build.gradle.kts" | head -n 1)
+          if [ -n "$PLUGIN_KTS" ]; then
+            echo "Found plugin at: $PLUGIN_KTS"
+            # حذف کامل بلوک flutter { ... } از فایل Kotlin DSL
+            sed -i '/flutter {/,/}/d' "$PLUGIN_KTS"
+            echo "Removed 'flutter' block from build.gradle.kts"
           else
-            echo "ERROR: android_file_picker not found!"
+            echo "ERROR: build.gradle.kts for android_file_picker not found!"
             exit 1
           fi
 
